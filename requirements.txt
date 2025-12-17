@@ -1,0 +1,61 @@
+Requirements and Run Steps
+
+Prerequisites (Windows)
+- Java 17 (Adoptium/OpenJDK)
+- Git (optional)
+- Node.js (v18+) and npm
+- Docker (optional) or MongoDB Community Server running locally
+- Internet access to install npm/maven dependencies
+
+Start MongoDB (choose one):
+- Local service (if installed):
+  - Ensure the MongoDB service is running (services.msc) or start via PowerShell:
+    Start-Service MongoDB
+- Docker (quick, recommended if you don't have MongoDB installed):
+  docker run -d --name mongo -p 27017:27017 mongo:latest
+
+Backend (Spring Boot)
+1. Open PowerShell and change to the backend folder:
+   cd 'C:\Users\Rishi Narayana\Desktop\PFinance\FinanceTracker'
+2. Use the included Maven wrapper to run the app:
+   .\mvnw.cmd spring-boot:run
+   - If you prefer to build first:
+     .\mvnw.cmd clean package
+     java -jar target\FinanceTracker-0.0.1-SNAPSHOT.jar
+3. Backend defaults:
+   - URL: http://localhost:8080
+   - MongoDB: mongodb://localhost:27017/financetracker (configured in application.properties)
+4. If port 8080 is in use, free it:
+   netstat -ano | findstr :8080
+   taskkill /PID <pid> /F
+
+Frontend (Vite + React)
+1. Open a new PowerShell and change to the frontend folder:
+   cd 'C:\Users\Rishi Narayana\Desktop\PFinance\frontend'
+2. Install dependencies (first time only):
+   npm install
+3. Start the dev server:
+   npm run dev
+4. Frontend defaults:
+   - URL: http://localhost:5173
+   - Dev proxy: requests to `/api` are proxied to http://localhost:8080 (see `vite.config.js`)
+
+Register/Login via CLI (optional)
+- Register:
+  curl -i -H "Content-Type: application/json" -X POST http://localhost:8080/api/auth/register -d '{"name":"Test User","email":"test@example.com","password":"test"}'
+- Login:
+  curl -i -H "Content-Type: application/json" -X POST http://localhost:8080/api/auth/login -d '{"email":"test@example.com","password":"test"}'
+  - Response contains a JSON token: {"token":"..."}
+  - The frontend stores the token in `localStorage` under key `jwt` when logging in via the UI.
+
+Notes & Troubleshooting
+- If you see 401/403 from the browser:
+  - Ensure the backend is running and reachable at http://localhost:8080.
+  - Check backend logs in the terminal running `mvnw` for authentication errors or exceptions.
+  - CORS: the app is configured to allow requests from http://localhost:5173. If you changed ports, update `SecurityConfig.java` or `vite.config.js` accordingly.
+- If repositories/controllers are not discovered:
+  - Confirm `FinanceTrackerApplication` has `scanBasePackages = {"com"}` and `@EnableMongoRepositories(basePackages = {"com.repository"})`.
+
+That's it — follow the steps in order: start MongoDB, start backend, then start frontend.
+
+If you'd like, I can now start the backend and frontend here and run through registration and creating categories/budgets interactively.

@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    container_name: finance-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./FinanceTracker
+    container_name: finance-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/financetracker
+    # Uncomment if you want to mount code for live reload (dev only)
+    # volumes:
+    #   - ./FinanceTracker:/app
+    # Note: Backend now connects directly to MongoDB using
+    # the URI in application.properties:
+    # spring.data.mongodb.uri=mongodb://localhost:27017/financetracker
+
+volumes:
+  mongo_data:
