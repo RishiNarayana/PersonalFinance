@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import com.repository.TransactionRepository;
 import com.entity.Transaction;
 import com.entity.User;
+import com.service.TransactionService;
+import com.service.BudgetService;
 import java.util.List;
 
 @RestController
@@ -15,13 +17,18 @@ public class TransactionController {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private BudgetService budgetService;
+
     @PostMapping
     public Transaction add(@RequestBody Transaction transaction,
                            Authentication auth) {
 
         User user = (User) auth.getPrincipal();
-        transaction.setUser(user);
-        return transactionRepository.save(transaction);
+        return transactionService.save(transaction, user);
     }
 
     @GetMapping
@@ -37,17 +44,28 @@ public class TransactionController {
 
         User user = (User) auth.getPrincipal();
         Transaction tx = transactionRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
         if (!tx.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }
 
+        // Update fields
         tx.setAmount(updated.getAmount());
         tx.setDate(updated.getDate());
         tx.setNote(updated.getNote());
         tx.setCategory(updated.getCategory());
         tx.setType(updated.getType());
+
+        // Validate budget if it's an expense
+        if (tx.getType() != null && tx.getType().equals("EXPENSE")) {
+            BudgetService.BudgetValidationResult validation = 
+                    budgetService.validateExpense(user, tx);
+            
+            if (!validation.isAllowed()) {
+                throw new IllegalArgumentException(validation.getMessage());
+            }
+        }
 
         return transactionRepository.save(tx);
     }

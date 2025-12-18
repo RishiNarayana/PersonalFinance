@@ -64,6 +64,9 @@ public class AnalyticsController {
         Map<String, Double> map = new HashMap<>();
         for (Transaction t : transactionService.findByUser(user)) {
             if (t.getDate() == null) continue;
+            // Only include expenses for category breakdown
+            if (!"EXPENSE".equalsIgnoreCase(t.getType())) continue;
+            
             if (!t.getDate().isBefore(start) && !t.getDate().isAfter(end)) {
                 String cat = t.getCategory() != null ? t.getCategory().getName() : "Uncategorized";
                 map.put(cat, map.getOrDefault(cat, 0.0) + (t.getAmount() != null ? t.getAmount() : 0.0));
