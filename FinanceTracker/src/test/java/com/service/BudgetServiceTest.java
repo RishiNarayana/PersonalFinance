@@ -102,6 +102,9 @@ public class BudgetServiceTest {
 
         when(transactionRepository.findByUserAndDateBetween(any(), any(), any()))
                 .thenReturn(Arrays.asList(expense, income));
+                
+        when(transactionRepository.findByUserAndCategoryAndDateBetween(any(), eq(cat), any(), any()))
+                .thenReturn(Arrays.asList(expense, income));
 
         // Execute
         BudgetStatusResponse response = budgetService.getBudgetStatus(user, 2024, 5);

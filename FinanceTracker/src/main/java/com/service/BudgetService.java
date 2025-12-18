@@ -189,23 +189,8 @@ public class BudgetService {
             Category cat = categoryBudget.getCategory();
             double categoryLimit = categoryBudget.getMonthlyLimit();
 
-            // Calculate category spending (Expenses - Income for this category)
-            double categoryExpenses = transactions.stream()
-                    .filter(tx -> "EXPENSE".equalsIgnoreCase(tx.getType()) && 
-                            tx.getCategory() != null && 
-                            tx.getCategory().getId().equals(cat.getId()))
-                    .mapToDouble(tx -> tx.getAmount() != null ? tx.getAmount() : 0.0)
-                    .sum();
-                    
-            double categoryIncome = transactions.stream()
-                    .filter(tx -> "INCOME".equalsIgnoreCase(tx.getType()) && 
-                            tx.getCategory() != null && 
-                            tx.getCategory().getId().equals(cat.getId()))
-                    .mapToDouble(tx -> tx.getAmount() != null ? tx.getAmount() : 0.0)
-                    .sum();
-            
-            double categorySpent = categoryExpenses - categoryIncome;
-            if (categorySpent < 0) categorySpent = 0.0; 
+            // Calculate category spending using DB query ensures reliable matching
+            double categorySpent = getCurrentSpending(user, year, month, cat); 
 
             double categoryRemaining = categoryLimit - categorySpent;
             double categoryUsagePercentage = categoryLimit > 0 ? 
