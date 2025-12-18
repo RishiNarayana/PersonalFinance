@@ -22,7 +22,7 @@ export default function Budgets() {
     if (!limit) return
     try {
       const payload = { monthlyLimit: Number(limit) }
-      if (catId) payload.category = { id: catId }
+      if (catId) payload.categoryId = catId
       await createBudget(payload)
       setLimit('')
       setCatId('')
@@ -64,9 +64,9 @@ export default function Budgets() {
                 <span>{b.category?.name || 'General'}</span>
                 <div className="budget-actions">
                   <span className="budget-amount">{b.monthlyLimit}</span>
-                  <button 
-                    type="button" 
-                    className="delete-btn" 
+                  <button
+                    type="button"
+                    className="delete-btn"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
